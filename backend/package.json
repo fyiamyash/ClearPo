@@ -5,7 +5,10 @@
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/multer": "^2.2.0"
+    "@types/multer": "^2.2.0",
+    "@types/pg": "^8.23.1",
+    "drizzle-kit": "^1.0.0-rc.4",
+    "tsx": "^4.23.13"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -14,8 +17,10 @@
     "@types/express": "^5.0.6",
     "bullmq": "^6.3.6",
     "dotenv": "^17.4.2",
+    "drizzle-orm": "^1.0.0-rc.4",
     "express": "^5.2.1",
     "ioredis": "^6.0.0",
-    "multer": "^2.4.0"
+    "multer": "^2.4.0",
+    "pg": "^8.23.0"
   }
 }

@@ -1,6 +1,7 @@
 import express from "express";
 import { envVarible } from "./config/envCustom";
 import { appRouter } from "./routes";
+import "./workers/email-sync-worker";
 
 const app = express();
 const port = envVarible.Port;
