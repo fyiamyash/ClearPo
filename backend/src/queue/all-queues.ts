@@ -1,6 +1,6 @@
 import { Queue } from "bullmq";
 import { connectionForBullmq } from "./connection";
-import type { emailSyncJob } from "./jobs";
+import type { emailSyncJob, pdfExtraction } from "./jobs";
 
 export const email_sync_queue = new Queue<emailSyncJob>("email-sync", {
   connection: connectionForBullmq,
@@ -15,7 +15,7 @@ export const email_sync_queue = new Queue<emailSyncJob>("email-sync", {
   },
 });
 
-export const pdf_extraction_queue = new Queue("pdf-queue", {
+export const pdf_extraction_queue = new Queue<pdfExtraction>("pdf-queue", {
   connection: connectionForBullmq,
   defaultJobOptions: {
     removeOnComplete: {

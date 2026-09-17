@@ -4,3 +4,7 @@ export type emailSyncJob = {
   size: number;
   location: string;
 };
+
+export type pdfExtraction = {
+  invoiceId: string;
+};
