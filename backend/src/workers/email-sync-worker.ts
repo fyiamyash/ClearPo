@@ -21,6 +21,8 @@ async function syncEmailWithDb(data: emailSyncJob) {
   }
   await pdf_extraction_queue.add("extract-pdf", {
     invoiceId: invoiceId,
+    location: data.location,
+    size: data.size,
   });
   console.log(`Job is created for extracting invoice : ${data.fileName}`);
 }

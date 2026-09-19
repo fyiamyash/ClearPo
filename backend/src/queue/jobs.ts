@@ -7,4 +7,8 @@ export type emailSyncJob = {
 
 export type pdfExtraction = {
   invoiceId: string;
+  location: string;
+  size: number;
 };
+
+export type reconciliation = {};
