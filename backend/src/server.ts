@@ -3,7 +3,7 @@ import { envVarible } from "./config/envCustom";
 import { appRouter } from "./routes";
 import "./workers/email-sync-worker";
 import "./workers/pdf-extraction-worker";
-
+import "./workers/reconciliation-worker";
 const app = express();
 const port = envVarible.Port;
 

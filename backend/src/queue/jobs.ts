@@ -11,4 +11,18 @@ export type pdfExtraction = {
   size: number;
 };
 
-export type reconciliation = {};
+export type reconciliation_type = {
+  supplier_Email: string;
+  supplier_name: string;
+  invoice_number: string;
+  total_amount: number;
+  purchase_order: string;
+  lineItems: [
+    {
+      product: string;
+      quantity: number;
+      unit_price: string;
+      total_amount: string;
+    },
+  ];
+};

@@ -1,6 +1,10 @@
 import { Queue } from "bullmq";
 import { connectionForBullmq } from "./connection";
-import type { emailSyncJob, pdfExtraction } from "./jobs";
+import {
+  type emailSyncJob,
+  type pdfExtraction,
+  type reconciliation_type,
+} from "./jobs";
 
 export const email_sync_queue = new Queue<emailSyncJob>("email-sync", {
   connection: connectionForBullmq,
@@ -28,15 +32,18 @@ export const pdf_extraction_queue = new Queue<pdfExtraction>("pdf-queue", {
   },
 });
 
-export const reconciliation_queue = new Queue("reconcile", {
-  connection: connectionForBullmq,
-  defaultJobOptions: {
-    removeOnComplete: {
-      age: 60,
-      count: 10,
-    },
-    removeOnFail: {
-      age: 60,
+export const reconciliation_queue = new Queue<reconciliation_type>(
+  "reconcile",
+  {
+    connection: connectionForBullmq,
+    defaultJobOptions: {
+      removeOnComplete: {
+        age: 60,
+        count: 10,
+      },
+      removeOnFail: {
+        age: 60,
+      },
     },
   },
-});
+);
