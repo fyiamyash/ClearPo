@@ -16,6 +16,5 @@ export async function authenticateOdoo() {
     },
     id: Date.now(),
   });
-  console.log(response.data.result);
   return response.data.result;
 }

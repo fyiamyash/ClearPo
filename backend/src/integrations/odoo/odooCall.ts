@@ -1,5 +1,6 @@
 import axios from "axios";
 import { envVarible } from "../../config/envCustom";
+import { authenticateOdoo } from "./odooAuth";
 
 export async function odooCall(
   model: string,
@@ -7,9 +8,9 @@ export async function odooCall(
   args: unknown[],
   kwargs: Record<string, unknown> = {},
 ) {
-  const url = envVarible.odoo_url;
+  const url = envVarible.odoo_url + "/jsonrpc";
   const db = envVarible.odoo_Db;
-  const username = envVarible.odoo_username;
+  const uid = await authenticateOdoo();
   const apikey = envVarible.odoo_apikey;
   const response = await axios.post(url!, {
     jsonrpc: "2.0",
@@ -17,7 +18,7 @@ export async function odooCall(
     params: {
       service: "object",
       method: "execute_kw",
-      args: [db, username, apikey, model, method, args, kwargs],
+      args: [db, uid, apikey, model, method, args, kwargs],
     },
     id: Date.now(),
   });

@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { authenticateOdoo } from "./integrations/odoo/client";
+import { authenticateOdoo } from "./integrations/odoo/odooAuth";
+import { reconciliation } from "./reconciliation/reconcile";
 
 async function main() {
-  const uuid = await authenticateOdoo();
-  console.log("Odoo UID:", uuid);
+  reconciliation("P00012");
 }
 
 main().catch(console.error);
