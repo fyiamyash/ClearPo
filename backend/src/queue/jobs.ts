@@ -21,8 +21,8 @@ export type reconciliation_type = {
     {
       product: string;
       quantity: number;
-      unit_price: string;
-      total_amount: string;
+      unit_price: number;
+      total_amount: number;
     },
   ];
 };

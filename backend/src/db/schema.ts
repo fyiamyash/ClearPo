@@ -27,12 +27,10 @@ export const invoiceTable = pgTable("Invoice", {
   supplier_Email: varchar(),
   supplier_name: varchar(),
   invoice_number: varchar(),
-  total_amount: integer(),
+  total_amount: decimal({ precision: 12, scale: 2, mode: "number" }),
   purchase_order: varchar(),
   status: statusEnum(),
-  createdAt: timestamp({ withTimezone: true, mode: "date" })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 
 export const lineItems = pgTable("LineItems", {
@@ -42,8 +40,8 @@ export const lineItems = pgTable("LineItems", {
     .references(() => invoiceTable.id),
   product: varchar().notNull(),
   quantity: integer().notNull(),
-  unit_price: decimal({ precision: 12, scale: 2 }).notNull(),
-  total_amount: decimal({ precision: 12, scale: 2 }),
+  unit_price: decimal({ precision: 12, scale: 2, mode: "number" }).notNull(),
+  total_amount: decimal({ precision: 12, scale: 2, mode: "number" }),
 });
 
 export const actorEnum = pgEnum("actor", ["SYSTEM", "ADMIN"]);
@@ -53,9 +51,7 @@ export const invoice_events = pgTable("Invoice_Events", {
   invoiceId: uuid().references(() => invoiceTable.id),
   type: varchar(),
   actor: actorEnum(),
-  createdAt: timestamp({ withTimezone: true, mode: "date" })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp({ withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
 
 export const humanReview = pgTable("Human_Review", {

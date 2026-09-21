@@ -6,9 +6,9 @@ import type { pdfExtractedDataType } from "./pdf-extraction-worker";
 export const reconciliation_Worker = new Worker(
   "reconcile",
   async (job) => {
-    console.log("Reconciliation started!");
     const invoiceDatafromDb: pdfExtractedDataType = job.data;
-    const resultFromReconciliation = await reconciliation(j);
+    console.log("Reconciliation process started!");
+    const resultFromReconciliation = await reconciliation(invoiceDatafromDb);
   },
   { connection: connectionForBullmq },
 );
