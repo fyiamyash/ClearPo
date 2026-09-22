@@ -9,4 +9,6 @@ import type { reconciliationResult } from "./resultTypes";
 export async function reconciliation(incomingDataFromPdfJob: pdfExtractedDataType) {
   const resulFromDeterministicFLow = await deterministicFlow(incomingDataFromPdfJob);
   console.log(resulFromDeterministicFLow);
+  if (resulFromDeterministicFLow.agent_call_required) {
+  }
 }
