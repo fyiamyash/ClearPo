@@ -8,10 +8,13 @@ import type { lineItemType, reconciliationResult } from "./resultTypes";
 export async function deterministicFlow(
   invoiceData: pdfExtractedDataType,
 ): Promise<reconciliationResult> {
+  console.log("pdf data in the deterministic flow", invoiceData);
+  console.log(invoiceData.supplier_name);
   const data: incomingData = {
     poNumber: invoiceData.purchase_order,
     vendor: invoiceData.supplier_name,
   };
+  console.log("deterministic flow started");
   const result: reconciliationResult = {
     poMatch: false,
     supplierMatch: false,
@@ -25,10 +28,17 @@ export async function deterministicFlow(
     reason: [],
     decision: "REVIEW_REQUIRED",
   };
+  if (!data.poNumber) {
+    result.agent_call_required = true;
+    result.reason.push("Purchase order number(PO) not found in data extracted from PDF received!");
+    console.log("deterministic flow completed");
+    return result;
+  }
   const Podetails = await getPurchaseOrder(data);
   if (!Podetails) {
     result.agent_call_required = true;
     result.reason.push("Purchase order number(PO) not found in the ERP databse");
+    console.log("deterministic flow completed");
     return result;
   }
   if (Podetails.purchaseOrder !== invoiceData.purchase_order) {
@@ -95,5 +105,6 @@ export async function deterministicFlow(
   ) {
     result.decision = "READY_FOR_PAYMENT";
   }
+  console.log("deterministic flow completed");
   return result;
 }

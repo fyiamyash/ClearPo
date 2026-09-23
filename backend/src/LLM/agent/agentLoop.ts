@@ -2,17 +2,47 @@ import axios from "axios";
 import type { reconciliationResult } from "../../reconciliation/resultTypes";
 import localAI, { type messageForlocal } from "../adapter/localAI";
 import type { responseType } from "../messageTypes";
-import { systemPropmptForReconciliation } from "./systemPrompt";
-import { toolCall } from "./toolCall";
+import { toolCall, type toolname } from "./toolCall";
+import type { pdfExtractedDataType } from "../../workers/pdf-extraction-worker";
+import { buildReconciliationPrompt } from "./prompts/buildPrompts";
 
-export async function agentLoop(resulFromDeterministicFLow: reconciliationResult) {
+export async function agentLoop(
+  resulFromDeterministicFLow: reconciliationResult,
+  receivedInvoice_data: pdfExtractedDataType,
+) {
+  console.log("Calling agent to investigate");
+  //   const messageToLLm: messageForlocal[] = [
+  //     {
+  //       role: "system",
+  //       content: systemPropmptForReconciliation,
+  //     },
+  //   ];
+  //   messageToLLm.push({
+  //     role: "user",
+  //     content: `
+  // You are processing an invoice reconciliation investigation.
+
+  // INVOICE_DATA:
+  // ${JSON.stringify(receivedInvoice_data, null, 2)}
+
+  // DETERMINISTIC_RECONCILIATION_RESULT:
+  // ${JSON.stringify(resulFromDeterministicFLow, null, 2)}
+  //   });
+
+  const systemPrompt = buildReconciliationPrompt(resulFromDeterministicFLow, receivedInvoice_data);
   const messageToLLm: messageForlocal[] = [
     {
       role: "system",
-      content: systemPropmptForReconciliation,
+      content: systemPrompt,
     },
   ];
-  messageToLLm.push({ role: "user", content: "hello llm!" });
+  messageToLLm.push({
+    role: "user",
+    content: JSON.stringify({
+      invoice: receivedInvoice_data,
+      deterministicResult: resulFromDeterministicFLow,
+    }),
+  });
 
   while (true) {
     const data_from_llm: any = await axios.post(
@@ -37,13 +67,30 @@ export async function agentLoop(resulFromDeterministicFLow: reconciliationResult
       return;
     }
     if (extracted.resType === "Text") {
-      console.log(extracted.content);
+      console.log("Here is the result from agent investigation!", extracted.content);
+      console.log("Investigation completed");
       break;
     } else if (extracted.resType == "toolcall") {
-      const toolCallresp = JSON.stringify(toolCall(extracted.content));
+      console.log("Tool call required", extracted.content);
+      let toolcallStr: { toolname: toolname; args: any };
+
+      if (typeof extracted.content === "string") {
+        toolcallStr = JSON.parse(extracted.content);
+      } else if (typeof extracted.content === "object" && extracted.content !== null) {
+        toolcallStr = extracted.content as { toolname: toolname; args: any };
+      } else {
+        throw new Error(`Unexpected content type for toolcall: ${typeof extracted.content}`);
+      }
+      const toolCallresp = await toolCall(toolcallStr.toolname, toolcallStr.args);
+      console.log("TOOL RESULT:");
+      console.log(toolCallresp);
+      messageToLLm.push({
+        role: "assistant",
+        content: cleaned,
+      });
       messageToLLm.push({
         role: "toolcall",
-        content: toolCallresp,
+        content: JSON.stringify(toolCallresp),
       });
       continue;
     }

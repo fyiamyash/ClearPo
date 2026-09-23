@@ -21,7 +21,6 @@ async function main() {
     reason: [],
     decision: "REVIEW_REQUIRED",
   };
-  agentLoop(result);
 }
 
 main().catch(console.error);

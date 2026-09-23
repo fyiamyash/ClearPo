@@ -19,3 +19,45 @@ export async function getPurchaseOrder(receivedData: incomingData) {
     console.error("There is some error while fetching the Po details from the Erp!", err);
   }
 }
+
+export async function getPurchaseOrderByVendor(vendorName: string) {
+  try {
+    const result = await odooCall(
+      "purchase.order",
+      "search_read",
+      [[["partner_id.name", "=", vendorName]]],
+      {
+        fields: [
+          "name",
+          "partner_id",
+          "partner_ref",
+          "state",
+          "invoice_status",
+          "amount_total",
+          "order_line",
+          "picking_ids",
+        ],
+        limit: 20,
+      },
+    );
+
+    if (!result.length) {
+      return [];
+    }
+
+    return result.map((po: any) => ({
+      purchaseOrder: po.name,
+      supplierName_Name: po.partner_id?.[1],
+      vendorReference: po.partner_ref,
+      status: po.state,
+      invoiceStatus: po.invoice_status,
+      totalAmount: po.amount_total,
+      orderLineIds: po.order_line,
+      receiptIds: po.picking_ids,
+    }));
+  } catch (err) {
+    console.error("There is some error while fetching POs by vendor name from the ERP!", err);
+
+    throw err;
+  }
+}
