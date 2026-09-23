@@ -14,3 +14,15 @@ export type receiptType = {
   purchase_id: any;
   date_done: string;
 };
+
+export type bills = {
+  id: number;
+  name: string;
+  ref: string | false;
+  state: "draft" | "posted" | "cancel";
+  payment_state: string;
+  amount_total: number;
+  amount_residual: number;
+  invoice_date: string | false;
+  partner_id: [number, string];
+};

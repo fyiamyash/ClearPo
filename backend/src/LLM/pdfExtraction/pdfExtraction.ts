@@ -27,6 +27,7 @@ export async function llm_call_for_pdfExtraction(textMessage: string) {
     },
   );
   const rawContent = data_from_llm.data.choices[0].message.content;
+
   const cleaned = rawContent.replace(/<\|.*?\|>/g, "").trim();
   let extracted;
   try {

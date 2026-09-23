@@ -1,6 +1,6 @@
 import { getItemDetails } from "../integrations/odoo/odooLineItems";
 import { getPurchaseOrder } from "../integrations/odoo/odooPurchaseOrder";
-import { getReceipts } from "../integrations/odoo/odooReceipts";
+import { getReceipts, getVendorBills } from "../integrations/odoo/odooReceipts";
 import type { incomingData, receiptType } from "../integrations/odoo/odooTypes";
 import type { pdfExtractedDataType } from "../workers/pdf-extraction-worker";
 import type { lineItemType, reconciliationResult } from "./resultTypes";
@@ -22,6 +22,7 @@ export async function deterministicFlow(
     quantityMatch: false,
     lineItemUnitPrice: false,
     priceMatch: false,
+    ispaid: false,
     recieptMatch: false,
 
     agent_call_required: false,
@@ -63,6 +64,12 @@ export async function deterministicFlow(
   } else {
     result.supplierMatch = true;
   }
+
+  // checking for duplicate:
+  const paidPo = await getVendorBills(Podetails.invoiceIds);
+  if (paidPo) {
+  }
+
   const itemDetails: lineItemType[] = await getItemDetails(Podetails.orderLineIds);
   // checking items
   if (itemDetails.length !== invoiceData.lineItems.length) {

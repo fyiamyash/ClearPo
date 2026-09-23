@@ -79,6 +79,7 @@ async function readPdfBytes(metadata: pdfExtraction) {
     return data;
   } catch (err) {
     console.error("Error while sending the parsed text to LLM", err);
+    return;
   }
 }
 

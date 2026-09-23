@@ -6,7 +6,7 @@ export type reconciliationResult = {
   lineItemUnitPrice: boolean;
   priceMatch: boolean;
   recieptMatch: boolean;
-
+  ispaid: boolean;
   agent_call_required: boolean;
   reason: string[];
   decision: "REVIEW_REQUIRED" | "BLOCKED" | "READY_FOR_PAYMENT";

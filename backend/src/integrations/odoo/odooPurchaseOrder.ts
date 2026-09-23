@@ -14,6 +14,7 @@ export async function getPurchaseOrder(receivedData: incomingData) {
 
       orderLineIds: result[0].order_line,
       receiptIds: result[0].picking_ids,
+      invoiceIds: result[0].invoice_ids,
     };
   } catch (err) {
     console.error("There is some error while fetching the Po details from the Erp!", err);
@@ -54,6 +55,7 @@ export async function getPurchaseOrderByVendor(vendorName: string) {
       totalAmount: po.amount_total,
       orderLineIds: po.order_line,
       receiptIds: po.picking_ids,
+      invoiceIds: po.invoice_ids,
     }));
   } catch (err) {
     console.error("There is some error while fetching POs by vendor name from the ERP!", err);
