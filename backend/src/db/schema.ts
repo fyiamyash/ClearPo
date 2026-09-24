@@ -11,6 +11,7 @@ import {
 
 export const statusEnum = pgEnum("status_Enum", [
   "RECEIVED",
+  "RECONCILING",
   "REVIEW_REQUIRED",
   "READY_FOR_PAYMENT",
   "PAID",
@@ -52,7 +53,7 @@ export const invoice_events = pgTable("Invoice_Events", {
 });
 
 export const humanReview = pgTable("Human_Review", {
-  id: uuid().primaryKey(),
+  id: uuid().primaryKey().defaultRandom(),
   invoiceId: uuid()
     .notNull()
     .references(() => invoiceTable.id),
@@ -64,7 +65,7 @@ export const humanReview = pgTable("Human_Review", {
 });
 
 export const reconcileTable = pgTable("Reconcile", {
-  id: uuid().primaryKey(),
+  id: uuid().primaryKey().defaultRandom(),
   invoiceId: uuid().references(() => invoiceTable.id),
   result: varchar(),
   startedAt: timestamp({ withTimezone: true, mode: "date" }).notNull(),
@@ -72,7 +73,7 @@ export const reconcileTable = pgTable("Reconcile", {
 });
 
 export const agentTable = pgTable("AgentRun", {
-  id: uuid().primaryKey(),
+  id: uuid().primaryKey().defaultRandom(),
   invoiceId: uuid().references(() => invoiceTable.id),
   reconcileId: uuid().references(() => reconcileTable.id),
   startedAt: timestamp({ withTimezone: true, mode: "date" }).notNull(),

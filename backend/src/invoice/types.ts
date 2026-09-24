@@ -7,3 +7,20 @@ export type invoiceEvent =
   | "DETERMINISTIC_RECONCILIATION_COMPLETED"
   | "AGENT_INVESTIGATION_STARTED"
   | "RECONCILIATION_COMPLETED";
+
+export type humanReviewType = {
+  invoiceId: string;
+  decision: string;
+  reviewer: string;
+  reason: string;
+  createdAt: Date;
+  resolvedAt: Date;
+};
+
+export type agentTableType = {
+  invoiceId: string;
+  reconcileId: string;
+  startedAt: Date;
+  completedAt: Date;
+  result: string;
+};
