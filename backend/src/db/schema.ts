@@ -11,11 +11,8 @@ import {
 
 export const statusEnum = pgEnum("status_Enum", [
   "RECEIVED",
-  "EXTRACTING",
-  "RECONCILING",
   "REVIEW_REQUIRED",
   "READY_FOR_PAYMENT",
-  "PAYMENT_PROCESSING",
   "PAID",
   "BLOCKED",
   "FAILED",
@@ -47,7 +44,7 @@ export const lineItems = pgTable("LineItems", {
 export const actorEnum = pgEnum("actor", ["SYSTEM", "ADMIN"]);
 
 export const invoice_events = pgTable("Invoice_Events", {
-  id: integer().primaryKey(),
+  id: uuid().primaryKey().defaultRandom(),
   invoiceId: uuid().references(() => invoiceTable.id),
   type: varchar(),
   actor: actorEnum(),

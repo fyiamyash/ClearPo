@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { email_sync_queue } from "../queue/all-queues";
 
-export async function gmailController(req: Request, res: Response) {
+export async function invoiceController(req: Request, res: Response) {
   try {
     const file = req.file;
     if (!file) {

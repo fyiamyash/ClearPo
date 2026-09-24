@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { asyncHandler } from "../shared/asyncHandler";
-import { gmailController } from "../controller/gmailController";
+import { invoiceController } from "../controller/invoice";
 import path from "path";
 import multer from "multer";
 import { randomUUID } from "crypto";
@@ -27,5 +27,5 @@ const uploadFileMiddleware = multer({
 webHookRouter.post(
   "/gmail/webhook",
   uploadFileMiddleware.single("file"),
-  asyncHandler(gmailController),
+  asyncHandler(invoiceController),
 );
