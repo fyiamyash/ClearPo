@@ -6,7 +6,9 @@ export async function getPurchaseOrder(receivedData: incomingData) {
     const result = await odooCall("purchase.order", "search_read", [
       [["name", "=", receivedData.poNumber]],
     ]);
+
     return {
+      id: result[0].id,
       purchaseOrder: result[0].name,
       supplierName_Name: result[0].partner_id[1],
       status: result[0].invoice_status,

@@ -1,7 +1,7 @@
 import { getItemDetails } from "../integrations/odoo/odooLineItems";
 import { getPurchaseOrder } from "../integrations/odoo/odooPurchaseOrder";
 import { getReceipts, getVendorBills } from "../integrations/odoo/odooReceipts";
-import type { incomingData, receiptType } from "../integrations/odoo/odooTypes";
+import type { bills, incomingData, receiptType } from "../integrations/odoo/odooTypes";
 import type { pdfExtractedDataType } from "../workers/pdf-extraction-worker";
 import type { lineItemType, reconciliationResult } from "./resultTypes";
 
@@ -48,6 +48,18 @@ export async function deterministicFlow(
     result.poMatch = true;
   }
 
+  // checking for duplicate:
+  const paidPo: bills[] = await getVendorBills(Podetails.invoiceIds);
+  if (paidPo) {
+    const paid = paidPo.every((bill) => bill.payment_state === "paid");
+    if (paid) {
+      result.ispaid = true;
+      result.reason.push("This Purchase order(PO) is already paid!");
+      result.decision = "BLOCKED";
+      return result;
+    }
+  }
+
   //checking total_amount:
 
   if (Podetails.totalAmount !== invoiceData.total_amount) {
@@ -63,11 +75,6 @@ export async function deterministicFlow(
     result.agent_call_required = true;
   } else {
     result.supplierMatch = true;
-  }
-
-  // checking for duplicate:
-  const paidPo = await getVendorBills(Podetails.invoiceIds);
-  if (paidPo) {
   }
 
   const itemDetails: lineItemType[] = await getItemDetails(Podetails.orderLineIds);
