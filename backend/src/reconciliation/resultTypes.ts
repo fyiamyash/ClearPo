@@ -12,6 +12,8 @@ export type reconciliationResult = {
   decision: "REVIEW_REQUIRED" | "BLOCKED" | "READY_FOR_PAYMENT";
 };
 
+export type LlmResultType = Omit<reconciliationResult, "agent_call_required">;
+
 export type lineItemType = {
   id: number;
   product_id: any[];

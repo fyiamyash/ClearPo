@@ -5,30 +5,23 @@ import type { responseType } from "../messageTypes";
 import { toolCall, type toolname } from "./toolCall";
 import type { pdfExtractedDataType } from "../../workers/pdf-extraction-worker";
 import { buildReconciliationPrompt } from "./prompts/buildPrompts";
+import { updateInvoiceEvents } from "../../invoice/updateInvoiceEvents";
+import { liveEventPublisher } from "../../queue/connection";
 
 export async function agentLoop(
   resulFromDeterministicFLow: reconciliationResult,
   receivedInvoice_data: pdfExtractedDataType,
+  invoiceId: string,
 ) {
   console.log("Calling agent to investigate");
-  //   const messageToLLm: messageForlocal[] = [
-  //     {
-  //       role: "system",
-  //       content: systemPropmptForReconciliation,
-  //     },
-  //   ];
-  //   messageToLLm.push({
-  //     role: "user",
-  //     content: `
-  // You are processing an invoice reconciliation investigation.
-
-  // INVOICE_DATA:
-  // ${JSON.stringify(receivedInvoice_data, null, 2)}
-
-  // DETERMINISTIC_RECONCILIATION_RESULT:
-  // ${JSON.stringify(resulFromDeterministicFLow, null, 2)}
-  //   });
-
+  liveEventPublisher.publish(
+    `invoice:${invoiceId}`,
+    JSON.stringify({
+      type: "invoiceEvents",
+      data: "RUNNING_AGENT",
+    }),
+  );
+  updateInvoiceEvents("AGENT_INVESTIGATION_STARTED", invoiceId, "SYSTEM");
   const systemPrompt = buildReconciliationPrompt(resulFromDeterministicFLow, receivedInvoice_data);
   const messageToLLm: messageForlocal[] = [
     {
@@ -69,6 +62,7 @@ export async function agentLoop(
     if (extracted.resType === "Text") {
       console.log("Here is the result from agent investigation!", extracted.content);
       console.log("Investigation completed");
+      return extracted.content;
       break;
     } else if (extracted.resType == "toolcall") {
       console.log("Tool call required", extracted.content);

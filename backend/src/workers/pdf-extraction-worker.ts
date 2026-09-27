@@ -1,6 +1,6 @@
 import { Worker } from "bullmq";
 import { open } from "node:fs/promises";
-import { connectionForBullmq } from "../queue/connection";
+import { connectionForBullmq, liveEventPublisher } from "../queue/connection";
 import type { pdfExtraction } from "../queue/jobs";
 import { llm_call_for_pdfExtraction } from "../LLM/pdfExtraction/pdfExtraction";
 import { PDFParse } from "pdf-parse";
@@ -9,6 +9,7 @@ import { invoiceTable, lineItems } from "../db/schema";
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { reconciliation_queue } from "../queue/all-queues";
+import { updateInvoiceEvents } from "../invoice/updateInvoiceEvents";
 
 export type pdfExtractedDataType = {
   supplier_Email: string;
@@ -46,10 +47,23 @@ async function readPdfBytes(metadata: pdfExtraction) {
 
   try {
     const parsedTextFromParser = await pdfParser(allocatedBuffer);
-
+    liveEventPublisher.publish(
+      `invoice:${metadata.invoiceId}`,
+      JSON.stringify({
+        type: "invoiceEvents",
+        data: "EXTRACTING_PDF",
+      }),
+    );
     // llm call to extract pdf
     const data: pdfExtractedDataType = await llm_call_for_pdfExtraction(parsedTextFromParser);
-
+    liveEventPublisher.publish(
+      `invoice:${metadata.invoiceId}`,
+      JSON.stringify({
+        type: "invoiceEvents",
+        data: "EXTRACTION_COMPLETED",
+      }),
+    );
+    updateInvoiceEvents("EXTRACTION_COMPLETED", metadata.invoiceId, "SYSTEM");
     //inset invoice details & line items
     await db.transaction(async (tx) => {
       const invoiceDataFromDb = await tx
@@ -90,7 +104,11 @@ export const pdf_extraction_worker = new Worker(
     const storedInDB = await readPdfBytes(dataFromEmailWorker);
     if (storedInDB) {
       console.log("PDF data stored in database, procceding with adding ");
-      await reconciliation_queue.add("reconciliation", storedInDB);
+
+      await reconciliation_queue.add("reconciliation", {
+        pdfData: storedInDB,
+        invoiceId: dataFromEmailWorker.invoiceId,
+      });
     }
   },
   { connection: connectionForBullmq },

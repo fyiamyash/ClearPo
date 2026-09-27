@@ -26,3 +26,8 @@ export type reconciliation_type = {
     },
   ];
 };
+
+export type reconciliationQueueType = {
+  pdfData: reconciliation_type;
+  invoiceId: string;
+};

@@ -1,9 +1,10 @@
 import { Job, randomUUID, Worker } from "bullmq";
-import { connectionForBullmq } from "../queue/connection";
+import { connectionForBullmq, liveEventPublisher } from "../queue/connection";
 import type { emailSyncJob } from "../queue/jobs";
 import { db } from "../db/db";
 import { invoiceTable } from "../db/schema";
 import { pdf_extraction_queue } from "../queue/all-queues";
+import { updateInvoiceEvents } from "../invoice/updateInvoiceEvents";
 
 async function syncEmailWithDb(data: emailSyncJob) {
   const invoiceId = randomUUID();
@@ -15,15 +16,21 @@ async function syncEmailWithDb(data: emailSyncJob) {
   };
   const invoiceStored = await db.insert(invoiceTable).values(values);
   if (invoiceStored) {
-    console.log(
-      "Invoice initial details stored!, adding the details in extraction queue!",
-    );
+    console.log("Invoice initial details stored!, adding the details in extraction queue!");
   }
   await pdf_extraction_queue.add("extract-pdf", {
     invoiceId: invoiceId,
     location: data.location,
     size: data.size,
   });
+  liveEventPublisher.publish(
+    `invoice:${invoiceId}`,
+    JSON.stringify({
+      type: "invoiceEvents",
+      data: "INVOICE_RECEIVED",
+    }),
+  );
+  updateInvoiceEvents("INVOICE_RECEIVED", invoiceId, "SYSTEM");
   console.log(`Job is created for extracting invoice : ${data.fileName}`);
 }
 
@@ -35,10 +42,7 @@ export const email_worker = new Worker(
 
       await syncEmailWithDb(data);
     } catch (err) {
-      console.error(
-        "error while inserting the pdf initail doc from email sync worker",
-        err,
-      );
+      console.error("error while inserting the pdf initail doc from email sync worker", err);
     }
   },
   { connection: connectionForBullmq },

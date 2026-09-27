@@ -9,12 +9,14 @@ export async function invoiceController(req: Request, res: Response) {
       return;
     }
     // console.log(file);
-    await email_sync_queue.add("read-pdf", {
-      fileName: file.filename,
-      size: file.size,
-      emailId: req.body.emailId,
-      location: file.path,
-    });
+    setTimeout(async () => {
+      await email_sync_queue.add("read-pdf", {
+        fileName: file.filename,
+        size: file.size,
+        emailId: req.body.emailId,
+        location: file.path,
+      });
+    }, 5000);
 
     console.log(`Job is created for new invoice : ${file.filename}`);
 

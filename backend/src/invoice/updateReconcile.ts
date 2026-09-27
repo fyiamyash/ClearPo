@@ -8,12 +8,17 @@ export async function updateReconcile(
   decision: string,
 ) {
   try {
-    await db.insert(reconcileTable).values({
-      invoiceId: invoiceId,
-      result: decision,
-      startedAt: startedAt,
-      completedAt: finishedAt,
-    });
+    const [inserted] = await db
+      .insert(reconcileTable)
+      .values({
+        invoiceId: invoiceId,
+        result: decision,
+        startedAt: startedAt,
+        completedAt: finishedAt,
+      })
+      .returning();
+
+    return inserted;
   } catch (err) {
     console.error("Error while inserting entry for Reconciliation process", err);
     return;
