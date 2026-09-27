@@ -1,17 +1,23 @@
+import { invoiceStore } from "../store/invoice";
 import { InvoiceCard } from "./CardComponent";
 
-interface Invoice {
-  invoiceId: string;
-  clientName: string;
-  amount: string;
+export type sidebarInvoice = {
+  id: string;
+  supplier_Email: string | null;
+  supplier_name: string | null;
+  invoice_number: string | null;
+  total_amount: number;
+  purchase_order: string | null;
   status: string;
-}
+  createdAt: string;
+};
 
 interface InvoiceSidebarProps {
-  invoices: Invoice[];
+  invoices: sidebarInvoice[];
 }
 
 export function InvoiceSidebar({ invoices }: InvoiceSidebarProps) {
+  const setSelectedInvoice = invoiceStore((s) => s.setSelectedInvoice);
   return (
     <div className="bg-[#FFFCF8] h-screen w-full max-w-sm flex flex-col border-x border-gray-200">
       <div className="flex-none px-6 pt-6 pb-5">
@@ -35,7 +41,15 @@ export function InvoiceSidebar({ invoices }: InvoiceSidebarProps) {
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="flex flex-col gap-3 px-4 py-3">
           {invoices.map((invoice, i) => (
-            <InvoiceCard key={invoice.invoiceId} {...invoice} highlighted={i === 0} />
+            <InvoiceCard
+              key={invoice.id}
+              {...invoice}
+              highlighted={i === 0}
+              onClick={() => {
+                console.log(invoice);
+                setSelectedInvoice(invoice);
+              }}
+            />
           ))}
         </div>
       </div>

@@ -1,28 +1,20 @@
-interface InvoiceDetailPanelProps {
-  invoiceId: string;
-  clientName: string;
-  amount: string;
-  receivedDate: string; // e.g. "Sep 27, 2026 · 09:14"
-  accountRouting: string; // e.g. "Main operating · 402"
-}
+import { invoiceStore } from "../store/invoice";
 
-export function InvoiceDetailPanel({
-  invoiceId,
-  clientName,
-  amount,
-  receivedDate,
-  accountRouting,
-}: InvoiceDetailPanelProps) {
+export function InvoiceDetailPanel() {
+  const selectedInvoice = invoiceStore((s) => s.selectedInvoice);
+  if (!selectedInvoice) {
+    console.error("No invoice selected");
+    return;
+  }
   return (
     <div className="bg-[#FAF6EE] h-screen w-full flex flex-col">
-      {/* Upper section — invoice details */}
       <div className="flex-none px-10 pt-10 pb-8">
         <div className="text-xs font-bold uppercase tracking-widest text-gray-400">
           Current invoice
         </div>
-        <h1 className="text-5xl font-bold text-gray-900 mt-2">{clientName}</h1>
+        <h1 className="text-5xl font-bold text-gray-900 mt-2">{selectedInvoice.supplier_name}</h1>
         <div className="mt-3 text-base text-gray-500">
-          #{invoiceId} · ${amount}
+          #{selectedInvoice.invoice_number} · ${selectedInvoice.total_amount}
         </div>
 
         <div className="mt-8 flex items-center justify-between flex-wrap gap-6">
@@ -31,13 +23,17 @@ export function InvoiceDetailPanel({
               <div className="text-xs font-bold uppercase tracking-wide text-gray-400">
                 Received
               </div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">{receivedDate}</div>
+              <div className="mt-1 text-lg font-semibold text-gray-900">
+                {selectedInvoice.createdAt}
+              </div>
             </div>
             <div>
               <div className="text-xs font-bold uppercase tracking-wide text-gray-400">
                 Account routing
               </div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">{accountRouting}</div>
+              <div className="mt-1 text-lg font-semibold text-gray-900">
+                {selectedInvoice.purchase_order}
+              </div>
             </div>
           </div>
 
@@ -60,15 +56,11 @@ export function InvoiceDetailPanel({
         </div>
       </div>
 
-      {/* Divider — subtle, inset from both edges, not full-width */}
       <div className="px-10">
         <div className="border-t border-gray-200/70 mx-4" />
       </div>
 
-      {/* Lower section — left empty for now */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-10 py-10">
-        {/* Timeline content goes here */}
-      </div>
+      <div className="flex-1 min-h-0 overflow-y-auto px-10 py-10"></div>
     </div>
   );
 }

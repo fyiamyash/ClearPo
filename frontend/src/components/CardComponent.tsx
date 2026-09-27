@@ -1,20 +1,27 @@
 interface InvoiceCardProps {
-  invoiceId: string;
-  clientName: string;
-  amount: string;
+  id: string;
+  supplier_Email: string | null;
+  supplier_name: string | null;
+  invoice_number: string | null;
+  total_amount: number;
+  purchase_order: string | null;
   status: string;
-  highlighted?: boolean;
+  createdAt: string;
+  highlighted: boolean;
+  onClick: () => void;
 }
 
 export function InvoiceCard({
-  invoiceId,
-  clientName,
-  amount,
-  status = "Making decision",
-  highlighted = false,
+  invoice_number,
+  supplier_name,
+  total_amount,
+  highlighted,
+  status,
+  onClick,
 }: InvoiceCardProps) {
   return (
     <div
+      onClick={onClick}
       className={
         highlighted
           ? "bg-blue-50 border border-blue-100 rounded-xl px-4 py-4"
@@ -22,7 +29,7 @@ export function InvoiceCard({
       }
     >
       <div className="flex justify-between items-center">
-        <span className="font-bold text-base text-gray-900">#{invoiceId}</span>
+        <span className="font-bold text-base text-gray-900">#{invoice_number}</span>
         <span
           className={
             highlighted
@@ -34,9 +41,9 @@ export function InvoiceCard({
         </span>
       </div>
 
-      <div className="mt-2 text-base text-gray-500">{clientName}</div>
+      <div className="mt-2 text-base text-gray-500">{supplier_name}</div>
 
-      <div className="mt-5 text-md font-medium text-gray-700">${amount}</div>
+      <div className="mt-5 text-md font-medium text-gray-700">${total_amount}</div>
     </div>
   );
 }
