@@ -116,6 +116,7 @@ export const pdf_extraction_worker = new Worker(
 
 pdf_extraction_worker.on("failed", (job) => {
   if (job) {
-    console.log(`${job.id} is failed!`);
+    console.log(job.data);
+    console.log(`pdf extraction for ${job.id} is failed!`);
   }
 });

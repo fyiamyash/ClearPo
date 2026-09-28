@@ -22,8 +22,10 @@ export const invoiceTable = pgTable("Invoice", {
   id: uuid().primaryKey().notNull(),
   location: varchar().notNull(),
   filename: varchar().notNull(),
+  fileSize: integer(),
   supplier_Email: varchar(),
   supplier_name: varchar(),
+
   invoice_number: varchar(),
   total_amount: decimal({ precision: 12, scale: 2, mode: "number" }),
   purchase_order: varchar(),

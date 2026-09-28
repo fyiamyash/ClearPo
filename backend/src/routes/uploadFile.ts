@@ -5,7 +5,7 @@ import path from "path";
 import multer from "multer";
 import { randomUUID } from "crypto";
 
-export const webHookRouter = Router();
+export const uploadRouter = Router();
 
 const uploadDir = path.join(process.cwd(), "uploads");
 
@@ -24,8 +24,4 @@ const uploadFileMiddleware = multer({
   },
 });
 
-webHookRouter.post(
-  "/gmail/webhook",
-  uploadFileMiddleware.single("file"),
-  asyncHandler(invoiceController),
-);
+uploadRouter.post("/upload", uploadFileMiddleware.single("file"), asyncHandler(invoiceController));

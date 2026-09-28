@@ -13,25 +13,13 @@ async function syncEmailWithDb(data: emailSyncJob) {
     location: data.location,
     filename: data.fileName,
     supplier_Email: data.emailId,
+    fileSize: data.size,
   };
   const invoiceStored = await db.insert(invoiceTable).values(values);
   if (invoiceStored) {
-    console.log("Invoice initial details stored!, adding the details in extraction queue!");
+    console.log("Invoice initial details stored!");
   }
-  await pdf_extraction_queue.add("extract-pdf", {
-    invoiceId: invoiceId,
-    location: data.location,
-    size: data.size,
-  });
-  liveEventPublisher.publish(
-    `invoice:${invoiceId}`,
-    JSON.stringify({
-      type: "invoiceEvents",
-      data: "INVOICE_RECEIVED",
-    }),
-  );
   updateInvoiceEvents("INVOICE_RECEIVED", invoiceId, "SYSTEM");
-  console.log(`Job is created for extracting invoice : ${data.fileName}`);
 }
 
 export const email_worker = new Worker(

@@ -1,6 +1,7 @@
 import express from "express";
 import { envVarible } from "./config/envCustom";
 import { appRouter } from "./routes";
+import cors from "cors";
 import "./workers/email-sync-worker";
 import "./workers/pdf-extraction-worker";
 import "./workers/reconciliation-worker";
@@ -8,6 +9,7 @@ const app = express();
 const port = envVarible.Port;
 
 app.use(express.json());
+app.use(cors());
 app.use(appRouter);
 
 app.listen(port, () => {

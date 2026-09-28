@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { webHookRouter } from "./gamilWeebhook";
+import { uploadRouter } from "./uploadFile";
 import { timeLineRouter } from "./timeLine";
+import { invoiceRouter } from "./invoiceRouter";
 
 export const appRouter = Router();
 
-appRouter.use(webHookRouter);
+appRouter.use(uploadRouter);
 appRouter.use(timeLineRouter);
+appRouter.use(invoiceRouter);
