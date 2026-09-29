@@ -11,7 +11,6 @@ export async function deterministicFlow(
   invoiceData: pdfExtractedDataType,
 ): Promise<reconciliationResult> {
   console.log("pdf data in the deterministic flow", invoiceData);
-  console.log(invoiceData.supplier_name);
   const data: incomingData = {
     poNumber: invoiceData.purchase_order,
     vendor: invoiceData.supplier_name,

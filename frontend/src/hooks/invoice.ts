@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { invoiceStore } from "../store/invoice";
 
 export type Invoice = {
@@ -14,15 +14,19 @@ export type Invoice = {
 
 export function useInvoice() {
   const setInvoice = invoiceStore((s) => s.setInvoice);
-  useEffect(() => {
-    async function getInvoice() {
-      const resp = await fetch("http://localhost:3000/invoice");
-      if (!resp.ok) {
-        throw new Error("Unable to get invoices");
-      }
-      const data: Invoice[] = await resp.json();
-      setInvoice(data);
+
+  const getInvoice = useCallback(async () => {
+    const resp = await fetch("http://localhost:3000/invoice");
+    if (!resp.ok) {
+      throw new Error("Unable to get invoices");
     }
+    const data: Invoice[] = await resp.json();
+    setInvoice(data);
+  }, [setInvoice]);
+
+  useEffect(() => {
     getInvoice();
-  }, []);
+  }, [getInvoice]);
+
+  return { getInvoice };
 }

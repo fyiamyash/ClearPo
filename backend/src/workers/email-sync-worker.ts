@@ -1,5 +1,5 @@
 import { Job, randomUUID, Worker } from "bullmq";
-import { connectionForBullmq, liveEventPublisher } from "../queue/connection";
+import { connectionForBullmq } from "../queue/connection";
 import type { emailSyncJob } from "../queue/jobs";
 import { db } from "../db/db";
 import { invoiceTable } from "../db/schema";

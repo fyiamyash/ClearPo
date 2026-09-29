@@ -10,6 +10,7 @@ import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { reconciliation_queue } from "../queue/all-queues";
 import { updateInvoiceEvents } from "../invoice/updateInvoiceEvents";
+import { sleep } from "bun";
 
 export type pdfExtractedDataType = {
   supplier_Email: string;
@@ -47,7 +48,7 @@ async function readPdfBytes(metadata: pdfExtraction) {
 
   try {
     const parsedTextFromParser = await pdfParser(allocatedBuffer);
-    liveEventPublisher.publish(
+    await liveEventPublisher.publish(
       `invoice:${metadata.invoiceId}`,
       JSON.stringify({
         type: "invoiceEvents",
@@ -56,7 +57,12 @@ async function readPdfBytes(metadata: pdfExtraction) {
     );
     // llm call to extract pdf
     const data: pdfExtractedDataType = await llm_call_for_pdfExtraction(parsedTextFromParser);
-    liveEventPublisher.publish(
+    if (!data) {
+      console.error(`No result from LLm`);
+      return;
+    }
+    await sleep(5000);
+    await liveEventPublisher.publish(
       `invoice:${metadata.invoiceId}`,
       JSON.stringify({
         type: "invoiceEvents",

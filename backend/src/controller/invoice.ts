@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { email_sync_queue, pdf_extraction_queue } from "../queue/all-queues";
 import { db } from "../db/db";
-import { invoiceTable } from "../db/schema";
+import { invoiceTable, lineItems, lineItems } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { liveEventPublisher } from "../queue/connection";
 import { updateInvoiceEvents } from "../invoice/updateInvoiceEvents";
@@ -45,6 +45,7 @@ export async function getInvoiceList(req: Request, res: Response) {
       createdAt: invoiceTable.createdAt,
     })
     .from(invoiceTable);
+
   res.send(invoices);
 }
 
@@ -65,7 +66,7 @@ export async function startFlowController(req: Request, res: Response) {
     location: invoiceExist.location,
     size: invoiceExist.fileSize!,
   });
-  liveEventPublisher.publish(
+  await liveEventPublisher.publish(
     `invoice:${invoiceId}`,
     JSON.stringify({
       type: "invoiceEvents",

@@ -14,7 +14,7 @@ export async function agentLoop(
   invoiceId: string,
 ) {
   console.log("Calling agent to investigate");
-  liveEventPublisher.publish(
+  await liveEventPublisher.publish(
     `invoice:${invoiceId}`,
     JSON.stringify({
       type: "invoiceEvents",

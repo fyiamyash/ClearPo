@@ -7,7 +7,7 @@ import type { reconciliationQueueType } from "../queue/jobs";
 import { policyEngine } from "../policyEngine/policyEngine";
 import type { LlmResultType } from "../reconciliation/resultTypes";
 import { updateInvoiceTable } from "../invoice/updateInvoiceTable";
-import type { PolicyDecision } from "../policyEngine/types";
+import { sleep } from "bun";
 
 export const reconciliation_Worker = new Worker(
   "reconcile",
@@ -15,7 +15,7 @@ export const reconciliation_Worker = new Worker(
     const invoiceDatafromReconciliationQueue: reconciliationQueueType = job.data;
     const invoiceDatafromDb: pdfExtractedDataType = invoiceDatafromReconciliationQueue.pdfData;
     const invoiceId = invoiceDatafromReconciliationQueue.invoiceId;
-    liveEventPublisher.publish(
+    await liveEventPublisher.publish(
       `invoice:${invoiceId}`,
       JSON.stringify({
         type: "invoiceEvents",
@@ -24,11 +24,12 @@ export const reconciliation_Worker = new Worker(
     );
     updateInvoiceEvents("RECONCILIATION_STARTED", invoiceId, "SYSTEM");
     console.log("Reconciliation process started!");
+    await sleep(3000);
     const resultFromReconciliation: LlmResultType = await reconciliation(
       invoiceDatafromDb,
       invoiceId,
     );
-    liveEventPublisher.publish(
+    await liveEventPublisher.publish(
       `invoice:${invoiceId}`,
       JSON.stringify({
         type: "invoiceEvents",
@@ -36,7 +37,7 @@ export const reconciliation_Worker = new Worker(
       }),
     );
     updateInvoiceEvents("RECONCILIATION_COMPLETED", invoiceId, "SYSTEM");
-    liveEventPublisher.publish(
+    await liveEventPublisher.publish(
       `invoice:${invoiceId}`,
       JSON.stringify({
         type: "invoiceEvents",
@@ -47,7 +48,8 @@ export const reconciliation_Worker = new Worker(
     console.log("");
     console.log("result from Policy Engine:", policyEngineResult);
     updateInvoiceTable(policyEngineResult.decision);
-    liveEventPublisher.publish(
+    await sleep(2500);
+    await liveEventPublisher.publish(
       `invoice:${invoiceId}`,
       JSON.stringify({
         type: "invoiceEvents",

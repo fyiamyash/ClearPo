@@ -1,3 +1,4 @@
+import { sleep } from "bun";
 import { updateAgentLogs } from "../invoice/updateAgentLogs";
 import { updateInvoiceEvents } from "../invoice/updateInvoiceEvents";
 import { updateReconcile } from "../invoice/updateReconcile";
@@ -13,7 +14,7 @@ export async function reconciliation(
 ) {
   const startedAt = new Date();
   let completedAt;
-  liveEventPublisher.publish(
+  await liveEventPublisher.publish(
     `invoice:${invoiceId}`,
     JSON.stringify({
       type: "invoiceEvents",
@@ -22,14 +23,8 @@ export async function reconciliation(
   );
   const resulFromDeterministicFLow: reconciliationResult =
     await deterministicFlow(incomingDataFromPdfJob);
-  liveEventPublisher.publish(
-    `invoice:${invoiceId}`,
-    JSON.stringify({
-      type: "invoiceEvents",
-      data: "DETERMINISTIC_FLOW_COMPLETED",
-    }),
-  );
-  liveEventPublisher.publish(
+  await sleep(5000);
+  await liveEventPublisher.publish(
     `invoice:${invoiceId}`,
     JSON.stringify({
       type: "invoiceEvents",
@@ -54,7 +49,7 @@ export async function reconciliation(
         completedAt,
         parsedResultFromAgent.decision,
       );
-      liveEventPublisher.publish(
+      await liveEventPublisher.publish(
         `invoice:${invoiceId}`,
         JSON.stringify({
           type: "invoiceEvents",

@@ -3,9 +3,9 @@ interface InvoiceCardProps {
   supplier_Email: string | null;
   supplier_name: string | null;
   invoice_number: string | null;
-  total_amount: number;
+  total_amount: number | null;
   purchase_order: string | null;
-  status: string;
+  status: string | null;
   createdAt: string;
   highlighted: boolean;
   onClick: () => void;
@@ -16,9 +16,14 @@ export function InvoiceCard({
   supplier_name,
   total_amount,
   highlighted,
+  supplier_Email,
   status,
   onClick,
 }: InvoiceCardProps) {
+  const isNew = !invoice_number && !supplier_name && !status;
+
+  const displayStatus = isNew ? "Not started" : status;
+
   return (
     <div
       onClick={onClick}
@@ -29,7 +34,9 @@ export function InvoiceCard({
       }
     >
       <div className="flex justify-between items-center">
-        <span className="font-bold text-base text-gray-900">#{invoice_number}</span>
+        <span className="font-bold text-base text-gray-900">
+          {isNew ? "New invoice received" : `#${invoice_number}`}
+        </span>
         <span
           className={
             highlighted
@@ -37,13 +44,15 @@ export function InvoiceCard({
               : "text-xs font-medium uppercase tracking-wide text-gray-400"
           }
         >
-          {status}
+          {displayStatus}
         </span>
       </div>
 
-      <div className="mt-2 text-base text-gray-500">{supplier_name}</div>
+      <div className="mt-2 text-base text-gray-500">
+        {isNew ? (supplier_Email ?? "Unknown sender") : supplier_name}
+      </div>
 
-      <div className="mt-5 text-md font-medium text-gray-700">${total_amount}</div>
+      {!isNew && <div className="mt-5 text-md font-medium text-gray-700">${total_amount}</div>}
     </div>
   );
 }

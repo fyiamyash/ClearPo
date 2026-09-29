@@ -6,11 +6,12 @@ import { invoiceStore } from "../store/invoice";
 export function HomePage() {
   const invoices = invoiceStore((s) => s.invoices);
 
-  useInvoice();
+  const { getInvoice } = useInvoice();
 
+  console.log(invoices);
   return (
     <div className="flex h-screen w-full overflow-hidden">
-      <InvoiceSidebar invoices={invoices} />
+      <InvoiceSidebar invoices={invoices} onRefresh={getInvoice} />
       <InvoiceDetailPanel />
     </div>
   );

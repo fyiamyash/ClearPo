@@ -1,20 +1,46 @@
 import { invoiceStore } from "../store/invoice";
 
+const BLANK = "\u00A0";
+
 export function InvoiceDetailPanel() {
   const selectedInvoice = invoiceStore((s) => s.selectedInvoice);
+
   if (!selectedInvoice) {
-    console.error("No invoice selected");
-    return;
+    return (
+      <div className="bg-[#FAF6EE] h-screen w-full flex items-center justify-center">
+        <div className="w-full px-10">
+          <div className="text-center text-gray-400 text-sm pb-6">No invoice selected</div>
+          <div className="border-t border-gray-300 mx-4" />
+        </div>
+      </div>
+    );
   }
+
+  const formattedDate = selectedInvoice.createdAt
+    ? new Date(selectedInvoice.createdAt).toLocaleDateString("en-US", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC",
+      })
+    : BLANK;
+
+  const supplierName = selectedInvoice.supplier_name?.trim() || BLANK;
+  const invoiceNumber = selectedInvoice.invoice_number || BLANK;
+  const purchaseOrder = selectedInvoice.purchase_order || BLANK;
+  const totalAmount =
+    selectedInvoice.total_amount != null ? `$${selectedInvoice.total_amount}` : BLANK;
+
   return (
     <div className="bg-[#FAF6EE] h-screen w-full flex flex-col">
       <div className="flex-none px-10 pt-10 pb-8">
         <div className="text-xs font-bold uppercase tracking-widest text-gray-400">
           Current invoice
         </div>
-        <h1 className="text-5xl font-bold text-gray-900 mt-2">{selectedInvoice.supplier_name}</h1>
+        <h1 className="text-5xl font-bold text-gray-900 mt-2">{supplierName}</h1>
         <div className="mt-3 text-base text-gray-500">
-          #{selectedInvoice.invoice_number} · ${selectedInvoice.total_amount}
+          #{invoiceNumber} · {totalAmount}
         </div>
 
         <div className="mt-8 flex items-center justify-between flex-wrap gap-6">
@@ -23,22 +49,18 @@ export function InvoiceDetailPanel() {
               <div className="text-xs font-bold uppercase tracking-wide text-gray-400">
                 Received
               </div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">
-                {selectedInvoice.createdAt}
-              </div>
+              <div className="mt-1 text-lg font-semibold text-gray-900">{formattedDate}</div>
             </div>
             <div>
               <div className="text-xs font-bold uppercase tracking-wide text-gray-400">
-                Account routing
+                Purchase order
               </div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">
-                {selectedInvoice.purchase_order}
-              </div>
+              <div className="mt-1 text-lg font-semibold text-gray-900">{purchaseOrder}</div>
             </div>
           </div>
 
           <button className="flex items-center gap-2 bg-gray-900 text-white text-sm font-semibold px-5 py-3 rounded-xl hover:bg-gray-800 transition-colors">
-            Hold processing
+            Start Flow
           </button>
         </div>
 
