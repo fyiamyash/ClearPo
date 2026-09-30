@@ -4,6 +4,10 @@ ClearPo is an invoice review project. I built it to take an invoice PDF, extract
 
 The project has a TypeScript and Express backend and a React frontend. BullMQ and Redis handle background jobs, PostgreSQL stores invoice and review data, and Odoo provides the ERP records used during reconciliation.
 
+## Architecture
+<img width="3792" height="760" alt="mermaid-diagram" src="https://github.com/user-attachments/assets/1032ebc5-af91-448e-9bc5-676fcb51a11b" />
+
+
 ## Invoice flow
 
 1. The front end uploads a PDF to the backend. For now, the file is saved in the backend's `uploads` folder.
