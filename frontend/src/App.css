@@ -83,6 +83,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .journey-section { min-height: 0; padding-top: 28px; }
 .journey-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; }
 .journey-caption { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+.decision-caption strong { color: var(--ink); font-family: "Space Grotesk", sans-serif; font-weight: 700; text-transform: capitalize; }
 .stream-state { display: flex; align-items: center; gap: 8px; padding-bottom: 2px; color: var(--muted); font-size: 11px; white-space: nowrap; }
 .stream-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
 .stream-state.is-connected .stream-dot { background: var(--primary); box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 14%, transparent); }
@@ -90,8 +91,8 @@ button { -webkit-tap-highlight-color: transparent; }
 .journey-path { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .path-future, .path-complete { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .path-future { stroke: var(--river); stroke-width: 1.8px; stroke-dasharray: 5 8; }
-.path-complete { stroke: var(--primary); stroke-width: 2.2px; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 900ms var(--ease-out); }
-.path-complete.is-entering { animation: draw-path 900ms var(--ease-out) both; }
+.path-complete { stroke: var(--primary); stroke-width: 2.2px; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 1800ms var(--ease-out); }
+.path-complete.is-entering { animation: draw-path 1800ms var(--ease-out) both; }
 @keyframes draw-path { from { stroke-dashoffset: 100; } to { stroke-dashoffset: var(--path-target); } }
 .journey-steps { position: absolute; z-index: 1; inset: 0; height: 100%; margin: 0; padding: 0; list-style: none; }
 .journey-step { position: static; min-width: 0; padding: 0; }

@@ -1,11 +1,12 @@
 import axios from "axios";
 import type { reconciliationResult } from "../../reconciliation/resultTypes";
-import localAI, { type messageForlocal } from "../adapter/localAI";
+
 import type { responseType } from "../messageTypes";
 import { toolCall, type toolname } from "./toolCall";
 import type { pdfExtractedDataType } from "../../workers/pdf-extraction-worker";
 import { buildReconciliationPrompt } from "./prompts/buildPrompts";
 import { updateInvoiceEvents } from "../../invoice/updateInvoiceEvents";
+import type { messageForlocal } from "../adapter/localAI";
 
 export async function agentLoop(
   resulFromDeterministicFLow: reconciliationResult,

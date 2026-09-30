@@ -26,8 +26,10 @@ export async function reconciliation(
       invoiceId,
     );
     completedAt = new Date();
-    if (resultFromAgent) {
-      const parsedResultFromAgent: LlmResultType = JSON.parse(resultFromAgent);
+    console.log("i reached here bro", typeof resultFromAgent);
+    if (resultFromAgent && typeof resultFromAgent == `object`) {
+      const parsedResultFromAgent: LlmResultType = resultFromAgent;
+      console.log(parsedResultFromAgent);
       const reconcileLog = await updateReconcile(
         invoiceId,
         startedAt,

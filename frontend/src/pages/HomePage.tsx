@@ -6,9 +6,28 @@ import { invoiceStore } from "../store/invoice";
 
 const API_ORIGIN = "http://localhost:3000";
 
+type InvoiceDataEvent = {
+  supplier_Email?: string | null;
+  supplier_name?: string | null;
+  invoice_number?: string | null;
+  total_amount?: number | null;
+  purchase_order?: string | null;
+};
+
+type PolicyEngineResult = {
+  decision?: string;
+  reason?: string[];
+};
+
+type CompletedFlowEvent = {
+  flow?: string;
+  result?: PolicyEngineResult;
+};
+
 export function HomePage() {
   const invoices = invoiceStore((s) => s.invoices);
   const selectedInvoice = invoiceStore((s) => s.selectedInvoice);
+  const updateInvoice = invoiceStore((s) => s.updateInvoice);
   const { getInvoice } = useInvoice();
   const [eventName, setEventName] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
@@ -21,12 +40,42 @@ export function HomePage() {
     const stream = new EventSource(`${API_ORIGIN}/timeline/${selectedInvoice.id}`);
     stream.onopen = () => setConnected(true);
     stream.onmessage = (message) => {
+      console.log("[invoice SSE] raw message", message.data);
       try {
-        const event = JSON.parse(message.data) as { type?: string; data?: string };
-        if (event.type === "invoiceEvents" && event.data) {
+        const event = JSON.parse(message.data) as { type?: string; data?: unknown };
+        console.log("[invoice SSE] parsed event", event);
+        if (event.type === "invoiceEvents" && typeof event.data === "string") {
           setEventName(event.data);
-          if (["EXTRACTION_COMPLETED", "RECONCILIATION_STARTED", "COMPLETED", "RECONCILIATION_COMPLETED"].includes(event.data)) {
-            void getInvoice();
+          updateInvoice(selectedInvoice.id, { status: event.data });
+        }
+        if (event.type === "invoiceEvents" && event.data && typeof event.data === "object") {
+          const data = event.data as CompletedFlowEvent;
+          if (data.flow === "COMPLETED") {
+            setEventName("COMPLETED");
+            updateInvoice(selectedInvoice.id, {
+              status: data.result?.decision ?? "COMPLETED",
+              decision: data.result?.decision ?? null,
+              decisionReason: data.result?.reason ?? [],
+            });
+          }
+        }
+        if (event.type === "invoiceData" && event.data) {
+          const payload = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+          if (typeof payload === "object" && payload !== null) {
+            const data = payload as InvoiceDataEvent;
+            console.log("[invoice SSE] invoiceData received", {
+              selectedInvoiceId: selectedInvoice.id,
+              payload: data,
+            });
+            // The SSE connection is scoped to the selected invoice channel, so
+            // apply this event to that invoice even if its payload ID differs.
+            updateInvoice(selectedInvoice.id, {
+              supplier_Email: data.supplier_Email,
+              supplier_name: data.supplier_name,
+              invoice_number: data.invoice_number,
+              total_amount: data.total_amount,
+              purchase_order: data.purchase_order,
+            });
           }
         }
       } catch (error) {
@@ -41,7 +90,9 @@ export function HomePage() {
     if (!selectedInvoice || starting) return;
     setStarting(true);
     try {
-      const response = await fetch(`${API_ORIGIN}/startFlow/${selectedInvoice.id}`, { method: "POST" });
+      const response = await fetch(`${API_ORIGIN}/startFlow/${selectedInvoice.id}`, {
+        method: "POST",
+      });
       if (!response.ok) throw new Error("Unable to start invoice flow");
       setEventName("INVOICE_RECEIVED");
       await getInvoice();
@@ -56,7 +107,9 @@ export function HomePage() {
     <div className="app-shell">
       <header className="app-topbar">
         <a className="app-brand" href="/" aria-label="ClearPo home">
-          <span className="app-brand-mark" aria-hidden="true">c</span>
+          <span className="app-brand-mark" aria-hidden="true">
+            c
+          </span>
           <span className="app-brand-name">clearpo</span>
           <span className="app-brand-divider" aria-hidden="true" />
           <span className="app-brand-context">PAYABLES WORKSPACE</span>

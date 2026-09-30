@@ -47,13 +47,16 @@ export const reconciliation_Worker = new Worker(
     const policyEngineResult = policyEngine(resultFromReconciliation);
     console.log("");
     console.log("result from Policy Engine:", policyEngineResult);
-    updateInvoiceTable(policyEngineResult.decision);
+    updateInvoiceTable(policyEngineResult.decision, invoiceId);
     await sleep(2500);
     await liveEventPublisher.publish(
       `invoice:${invoiceId}`,
       JSON.stringify({
         type: "invoiceEvents",
-        data: "COMPLETED",
+        data: {
+          flow: "COMPLETED",
+          result: policyEngineResult,
+        },
       }),
     );
   },

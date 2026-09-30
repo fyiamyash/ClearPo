@@ -69,6 +69,21 @@ async function readPdfBytes(metadata: pdfExtraction) {
         data: "EXTRACTION_COMPLETED",
       }),
     );
+    await liveEventPublisher.publish(
+      `invoice:${metadata.invoiceId}`,
+      JSON.stringify({
+        type: "invoiceData",
+        data: {
+          invoiceId: metadata.invoiceId,
+          supplier_Email: data.supplier_Email,
+          supplier_name: data.supplier_name,
+          invoice_number: data.invoice_number,
+          total_amount: data.total_amount,
+          purchase_order: data.purchase_order,
+          lineItems: data.lineItems,
+        },
+      }),
+    );
     updateInvoiceEvents("EXTRACTION_COMPLETED", metadata.invoiceId, "SYSTEM");
     //inset invoice details & line items
     await db.transaction(async (tx) => {

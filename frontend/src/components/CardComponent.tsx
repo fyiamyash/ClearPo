@@ -20,8 +20,12 @@ export function InvoiceCard({
   status,
   onClick,
 }: InvoiceCardProps) {
-  const isNew = !invoice_number && !supplier_name;
-  const displayName = isNew ? "New invoice received" : `#${invoice_number}`;
+  const displayName = invoice_number ? `#${invoice_number}` : supplier_name || "New invoice received";
+  const secondary = invoice_number
+    ? supplier_name || supplier_Email || "Supplier details pending"
+    : supplier_name
+      ? supplier_Email || "Invoice number pending"
+      : supplier_Email || "Details pending";
   const displayStatus = status?.replaceAll("_", " ") || "Not started";
 
   return (
@@ -35,8 +39,8 @@ export function InvoiceCard({
         <span className="invoice-card-number">{displayName}</span>
         <span className={`invoice-status ${highlighted ? "is-selected" : ""}`}>{displayStatus}</span>
       </span>
-      <span className="invoice-card-supplier">{isNew ? supplier_Email || "Unknown sender" : supplier_name}</span>
-      {!isNew && total_amount != null && (
+      <span className="invoice-card-supplier">{secondary}</span>
+      {total_amount != null && (
         <span className="invoice-card-amount">${total_amount.toLocaleString("en-US")}</span>
       )}
     </button>

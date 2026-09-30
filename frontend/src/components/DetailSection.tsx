@@ -4,8 +4,8 @@ import type { InvoiceType } from "../store/invoice";
 const journeySteps = [
   { title: "Email received", detail: "Message and attachment arrived safely.", icon: "↓" },
   { title: "Extracting PDF", detail: "Reading totals, dates and line items.", icon: "▤" },
-  { title: "Making decision", detail: "Matching policy, vendor and purchase order.", icon: "✧" },
   { title: "Reconciling", detail: "Preparing the final account match.", icon: "⚖︎" },
+  { title: "Making decision", detail: "Matching policy, vendor and purchase order.", icon: "✧" },
   { title: "Flow completed", detail: "Ready for payment and archive.", icon: "$" },
 ];
 
@@ -19,26 +19,31 @@ const journeyPositions = [
 
 const journeyPath = "M74 80 C 208 80, 125 216, 300 216 S 477 82, 540 125 S 482 358, 680 337 S 728 454, 850 447";
 
-const eventStage: Record<string, number> = {
-  INVOICE_RECEIVED: 1,
-  EXTRACTING_PDF: 1,
-  EXTRACTION_STARTED: 1,
-  EXTRACTION_COMPLETED: 2,
-  RECONCILIATION_STARTED: 2,
-  DETERMINISTIC_FLOW_STARTED: 2,
-  DETERMINISTIC_FLOW_COMPLETED: 3,
-  RUNNING_AGENT: 2,
-  AGENT_INVESTIGATION_COMPLETED: 3,
-  RECONCILIATION_COMPLETED: 3,
-  MAKING_DECISION: 2,
-  COMPLETED: 5,
+type JourneyState = { completedSteps: number; activeIndex: number; progressSegments: number };
+
+const journeyStates: Record<string, JourneyState> = {
+  INVOICE_RECEIVED: { completedSteps: 1, activeIndex: 1, progressSegments: 0.5 },
+  EXTRACTING_PDF: { completedSteps: 2, activeIndex: -1, progressSegments: 1 },
+  EXTRACTION_STARTED: { completedSteps: 2, activeIndex: -1, progressSegments: 1 },
+  EXTRACTION_COMPLETED: { completedSteps: 2, activeIndex: 2, progressSegments: 1.5 },
+  RECONCILIATION_STARTED: { completedSteps: 3, activeIndex: -1, progressSegments: 2 },
+  RECONCILIATION_COMPLETED: { completedSteps: 3, activeIndex: 3, progressSegments: 2.5 },
+  MAKING_DECISION: { completedSteps: 4, activeIndex: -1, progressSegments: 3 },
+  COMPLETED: { completedSteps: 5, activeIndex: -1, progressSegments: 4 },
+  DETERMINISTIC_FLOW_STARTED: { completedSteps: 2, activeIndex: -1, progressSegments: 1 },
+  DETERMINISTIC_FLOW_COMPLETED: { completedSteps: 3, activeIndex: 2, progressSegments: 1.5 },
+  RUNNING_AGENT: { completedSteps: 3, activeIndex: 3, progressSegments: 2.5 },
+  AGENT_INVESTIGATION_COMPLETED: { completedSteps: 4, activeIndex: -1, progressSegments: 3 },
 };
 
-function currentStage(invoice: InvoiceType, eventName: string | null) {
-  if (["BLOCKED", "REVIEW_REQUIRED", "READY_FOR_PAYMENT", "PAID"].includes(invoice.status ?? "")) return 5;
-  if (eventName && eventStage[eventName] !== undefined) return eventStage[eventName];
-  if (invoice.status === "RECONCILING") return 2;
-  return -1;
+function getJourneyState(invoice: InvoiceType, eventName: string | null): JourneyState {
+  if (["BLOCKED", "REVIEW_REQUIRED", "READY_FOR_PAYMENT", "PAID"].includes(invoice.status ?? "")) {
+    return { completedSteps: 5, activeIndex: -1, progressSegments: 4 };
+  }
+  const status = eventName ?? invoice.status;
+  if (status && journeyStates[status]) return journeyStates[status];
+  if (status === "RECONCILING") return journeyStates.RECONCILIATION_STARTED;
+  return { completedSteps: 0, activeIndex: -1, progressSegments: 0 };
 }
 
 function RevealingValue({ value, className = "" }: { value: string; className?: string }) {
@@ -72,20 +77,33 @@ function RevealingValue({ value, className = "" }: { value: string; className?: 
 }
 
 function Journey({ invoice, eventName, connected }: { invoice: InvoiceType; eventName: string | null; connected: boolean }) {
-  const activeStage = currentStage(invoice, eventName);
+  const journeyState = getJourneyState(invoice, eventName);
   const [pathAnimating, setPathAnimating] = useState(true);
-  const pathProgress = Math.min(100, Math.max(0, activeStage) * 25);
+  const pathProgress = Math.min(100, journeyState.progressSegments * 25);
   const needsReview = Boolean(
     eventName?.includes("FAILED") ||
       ["FAILED", "BLOCKED", "REVIEW_REQUIRED"].includes(invoice.status ?? ""),
   );
+  const decisionReason = invoice.decisionReason?.filter(Boolean).join(" ");
 
   return (
     <section className="journey-section" aria-label="Invoice processing journey">
       <div className="journey-heading">
         <div>
-          <div className="eyebrow">Processing journey</div>
-          <p className="journey-caption">A live view of each step in this invoice’s review.</p>
+          {invoice.decision ? (
+            <>
+              <div className="eyebrow">Decision outcome</div>
+              <p className="journey-caption decision-caption">
+                <strong>{invoice.decision.replaceAll("_", " ")}</strong>
+                {decisionReason && <><span aria-hidden="true"> · </span>{decisionReason}</>}
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="eyebrow">Processing journey</div>
+              <p className="journey-caption">A live view of each step in this invoice’s review.</p>
+            </>
+          )}
         </div>
         <div className={`stream-state ${connected ? "is-connected" : ""}`} aria-live="polite">
           <span className="stream-dot" />
@@ -106,11 +124,11 @@ function Journey({ invoice, eventName, connected }: { invoice: InvoiceType; even
         </svg>
         <ol className="journey-steps">
           {journeySteps.map((step, index) => {
-            const complete = activeStage > index;
-            const active = !needsReview && activeStage === index;
-            const needsAttention = needsReview && activeStage === index;
+            const complete = journeyState.completedSteps > index;
+            const active = !complete && !needsReview && journeyState.activeIndex === index;
+            const needsAttention = needsReview && journeyState.activeIndex === index;
             const state = needsAttention ? "needs-attention" : complete ? "complete" : active ? "active" : "upcoming";
-            const lineComplete = index < activeStage && index < journeySteps.length - 1;
+            const lineComplete = index < Math.floor(journeyState.progressSegments) && index < journeySteps.length - 1;
             const number = String(index + 1).padStart(2, "0");
             const detail = invoice.status === "BLOCKED" && index === journeySteps.length - 1
               ? "Review complete. Payment is blocked."

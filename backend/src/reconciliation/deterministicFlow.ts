@@ -55,13 +55,13 @@ export async function deterministicFlow(
 
   // checking for duplicate:
   const paidPo: bills[] = await getVendorBills(Podetails.invoiceIds);
-  if (paidPo) {
+  if (paidPo.length > 0) {
     const paid = paidPo.every((bill) => bill.payment_state === "paid");
     if (paid) {
       result.ispaid = true;
       result.reason.push("This Purchase order(PO) is already paid!");
       result.decision = "BLOCKED";
-      console.log("deterministic flow completed");
+      console.log("deterministic flow completed", paidPo);
 
       return result;
     }
