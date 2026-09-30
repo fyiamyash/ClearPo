@@ -40,10 +40,8 @@ export function HomePage() {
     const stream = new EventSource(`${API_ORIGIN}/timeline/${selectedInvoice.id}`);
     stream.onopen = () => setConnected(true);
     stream.onmessage = (message) => {
-      console.log("[invoice SSE] raw message", message.data);
       try {
         const event = JSON.parse(message.data) as { type?: string; data?: unknown };
-        console.log("[invoice SSE] parsed event", event);
         if (event.type === "invoiceEvents" && typeof event.data === "string") {
           setEventName(event.data);
           updateInvoice(selectedInvoice.id, { status: event.data });
@@ -63,12 +61,6 @@ export function HomePage() {
           const payload = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
           if (typeof payload === "object" && payload !== null) {
             const data = payload as InvoiceDataEvent;
-            console.log("[invoice SSE] invoiceData received", {
-              selectedInvoiceId: selectedInvoice.id,
-              payload: data,
-            });
-            // The SSE connection is scoped to the selected invoice channel, so
-            // apply this event to that invoice even if its payload ID differs.
             updateInvoice(selectedInvoice.id, {
               supplier_Email: data.supplier_Email,
               supplier_name: data.supplier_name,

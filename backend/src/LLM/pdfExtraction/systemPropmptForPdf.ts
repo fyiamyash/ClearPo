@@ -20,7 +20,7 @@ Rules:
    must be plain JSON numbers.
    - No thousands separators (write 94500.00, not "94,500.00").
    - No currency symbols or codes (no "₹", "$", "USD", etc.).
-   - No quotes around them — they must be raw JSON numbers, not strings.
+   - No quotes around them; they must be raw JSON numbers, not strings.
 
 3. Extract information only when it is explicitly present in the invoice text.
 
