@@ -6,7 +6,6 @@ import { toolCall, type toolname } from "./toolCall";
 import type { pdfExtractedDataType } from "../../workers/pdf-extraction-worker";
 import { buildReconciliationPrompt } from "./prompts/buildPrompts";
 import { updateInvoiceEvents } from "../../invoice/updateInvoiceEvents";
-import { liveEventPublisher } from "../../queue/connection";
 
 export async function agentLoop(
   resulFromDeterministicFLow: reconciliationResult,
@@ -14,13 +13,6 @@ export async function agentLoop(
   invoiceId: string,
 ) {
   console.log("Calling agent to investigate");
-  await liveEventPublisher.publish(
-    `invoice:${invoiceId}`,
-    JSON.stringify({
-      type: "invoiceEvents",
-      data: "RUNNING_AGENT",
-    }),
-  );
   updateInvoiceEvents("AGENT_INVESTIGATION_STARTED", invoiceId, "SYSTEM");
   const systemPrompt = buildReconciliationPrompt(resulFromDeterministicFLow, receivedInvoice_data);
   const messageToLLm: messageForlocal[] = [

@@ -1,9 +1,8 @@
 import { Job, randomUUID, Worker } from "bullmq";
-import { connectionForBullmq } from "../queue/connection";
+import { connectionForBullmq, liveEventPublisher } from "../queue/connection";
 import type { emailSyncJob } from "../queue/jobs";
 import { db } from "../db/db";
 import { invoiceTable } from "../db/schema";
-import { pdf_extraction_queue } from "../queue/all-queues";
 import { updateInvoiceEvents } from "../invoice/updateInvoiceEvents";
 
 async function syncEmailWithDb(data: emailSyncJob) {
@@ -19,6 +18,13 @@ async function syncEmailWithDb(data: emailSyncJob) {
   if (invoiceStored) {
     console.log("Invoice initial details stored!");
   }
+  await liveEventPublisher.publish(
+    `invoice:${invoiceId}`,
+    JSON.stringify({
+      type: "invoiceEvents",
+      data: "INVOICE_RECEIVED",
+    }),
+  );
   updateInvoiceEvents("INVOICE_RECEIVED", invoiceId, "SYSTEM");
 }
 

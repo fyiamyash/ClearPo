@@ -3,7 +3,6 @@ import { updateAgentLogs } from "../invoice/updateAgentLogs";
 import { updateInvoiceEvents } from "../invoice/updateInvoiceEvents";
 import { updateReconcile } from "../invoice/updateReconcile";
 import { agentLoop } from "../LLM/agent/agentLoop";
-import { liveEventPublisher } from "../queue/connection";
 import type { pdfExtractedDataType } from "../workers/pdf-extraction-worker";
 import { deterministicFlow } from "./deterministicFlow";
 import type { LlmResultType, reconciliationResult } from "./resultTypes";
@@ -14,23 +13,9 @@ export async function reconciliation(
 ) {
   const startedAt = new Date();
   let completedAt;
-  await liveEventPublisher.publish(
-    `invoice:${invoiceId}`,
-    JSON.stringify({
-      type: "invoiceEvents",
-      data: "DETERMINISTIC_FLOW_STARTED",
-    }),
-  );
   const resulFromDeterministicFLow: reconciliationResult =
     await deterministicFlow(incomingDataFromPdfJob);
   await sleep(5000);
-  await liveEventPublisher.publish(
-    `invoice:${invoiceId}`,
-    JSON.stringify({
-      type: "invoiceEvents",
-      data: "DETERMINISTIC_FLOW_COMPLETED",
-    }),
-  );
   updateInvoiceEvents("DETERMINISTIC_RECONCILIATION_COMPLETED", invoiceId, "SYSTEM");
   console.log("result from deterministic flow:", resulFromDeterministicFLow);
   completedAt = new Date();
@@ -48,13 +33,6 @@ export async function reconciliation(
         startedAt,
         completedAt,
         parsedResultFromAgent.decision,
-      );
-      await liveEventPublisher.publish(
-        `invoice:${invoiceId}`,
-        JSON.stringify({
-          type: "invoiceEvents",
-          data: "AGENT_INVESTIGATION_COMPLETED",
-        }),
       );
       updateAgentLogs({
         invoiceId: invoiceId,

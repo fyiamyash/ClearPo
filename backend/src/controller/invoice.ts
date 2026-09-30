@@ -1,10 +1,8 @@
 import type { Request, Response } from "express";
 import { email_sync_queue, pdf_extraction_queue } from "../queue/all-queues";
 import { db } from "../db/db";
-import { invoiceTable, lineItems, lineItems } from "../db/schema";
+import { invoiceTable } from "../db/schema";
 import { eq } from "drizzle-orm";
-import { liveEventPublisher } from "../queue/connection";
-import { updateInvoiceEvents } from "../invoice/updateInvoiceEvents";
 
 export async function invoiceController(req: Request, res: Response) {
   try {
@@ -14,14 +12,13 @@ export async function invoiceController(req: Request, res: Response) {
       return;
     }
     // console.log(file);
-    setTimeout(async () => {
-      await email_sync_queue.add("read-pdf", {
-        fileName: file.filename,
-        size: file.size,
-        emailId: req.body.emailId,
-        location: file.path,
-      });
-    }, 5000);
+
+    await email_sync_queue.add("read-pdf", {
+      fileName: file.filename,
+      size: file.size,
+      emailId: req.body.emailId,
+      location: file.path,
+    });
 
     console.log(`Job is created for new invoice : ${file.filename}`);
 
@@ -66,13 +63,7 @@ export async function startFlowController(req: Request, res: Response) {
     location: invoiceExist.location,
     size: invoiceExist.fileSize!,
   });
-  await liveEventPublisher.publish(
-    `invoice:${invoiceId}`,
-    JSON.stringify({
-      type: "invoiceEvents",
-      data: "INVOICE_RECEIVED",
-    }),
-  );
+
   console.log(
     `Job is created for extracting invoice : ${invoiceExist.filename}, adding the details in extraction queue!`,
   );

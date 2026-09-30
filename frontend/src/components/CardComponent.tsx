@@ -20,39 +20,25 @@ export function InvoiceCard({
   status,
   onClick,
 }: InvoiceCardProps) {
-  const isNew = !invoice_number && !supplier_name && !status;
-
-  const displayStatus = isNew ? "Not started" : status;
+  const isNew = !invoice_number && !supplier_name;
+  const displayName = isNew ? "New invoice received" : `#${invoice_number}`;
+  const displayStatus = status?.replaceAll("_", " ") || "Not started";
 
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      className={
-        highlighted
-          ? "bg-blue-50 border border-blue-100 rounded-xl px-4 py-4"
-          : "rounded-xl px-4 py-4 border border-transparent hover:bg-blue-50 hover:border-blue-100 transition-colors"
-      }
+      aria-pressed={highlighted}
+      className={`invoice-card ${highlighted ? "is-selected" : ""}`}
     >
-      <div className="flex justify-between items-center">
-        <span className="font-bold text-base text-gray-900">
-          {isNew ? "New invoice received" : `#${invoice_number}`}
-        </span>
-        <span
-          className={
-            highlighted
-              ? "text-xs font-medium uppercase tracking-wide text-blue-600"
-              : "text-xs font-medium uppercase tracking-wide text-gray-400"
-          }
-        >
-          {displayStatus}
-        </span>
-      </div>
-
-      <div className="mt-2 text-base text-gray-500">
-        {isNew ? (supplier_Email ?? "Unknown sender") : supplier_name}
-      </div>
-
-      {!isNew && <div className="mt-5 text-md font-medium text-gray-700">${total_amount}</div>}
-    </div>
+      <span className="invoice-card-topline">
+        <span className="invoice-card-number">{displayName}</span>
+        <span className={`invoice-status ${highlighted ? "is-selected" : ""}`}>{displayStatus}</span>
+      </span>
+      <span className="invoice-card-supplier">{isNew ? supplier_Email || "Unknown sender" : supplier_name}</span>
+      {!isNew && total_amount != null && (
+        <span className="invoice-card-amount">${total_amount.toLocaleString("en-US")}</span>
+      )}
+    </button>
   );
 }

@@ -5,9 +5,9 @@ export type InvoiceType = {
   supplier_Email: string | null;
   supplier_name: string | null;
   invoice_number: string | null;
-  total_amount: number;
+  total_amount: number | null;
   purchase_order: string | null;
-  status: string;
+  status: string | null;
   createdAt: string;
 };
 

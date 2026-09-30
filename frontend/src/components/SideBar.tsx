@@ -7,9 +7,9 @@ export type sidebarInvoice = {
   supplier_Email: string | null;
   supplier_name: string | null;
   invoice_number: string | null;
-  total_amount: number;
+  total_amount: number | null;
   purchase_order: string | null;
-  status: string;
+  status: string | null;
   createdAt: string;
 };
 
@@ -68,30 +68,30 @@ export function InvoiceSidebar({ invoices, onRefresh }: InvoiceSidebarProps) {
   }, [invoices]);
 
   return (
-    <div className="bg-[#FFFCF8] h-screen w-full max-w-sm flex flex-col border-x border-gray-200">
+    <aside className="sidebar-panel">
       <div className="flex-none px-6 pt-6 pb-5">
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-xs font-medium uppercase tracking-widest text-gray-500">
+            <div className="eyebrow sidebar-eyebrow">
               Invoice Desk
             </div>
-            <div className="text-2xl font-medium text-gray-900 mt-1">Inbound</div>
+            <div className="sidebar-title">Inbound</div>
           </div>
           <button
             type="button"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors disabled:opacity-60"
+            className="refresh-button"
             aria-label="Refresh"
           >
             <span className={isRefreshing ? "inline-block animate-spin" : "inline-block"}>⟳</span>
           </button>
         </div>
-        <div className="border-t border-gray-200 mt-5" />
+        <div className="sidebar-divider" />
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="flex flex-col gap-3 px-4 py-3">
+      <div className="sidebar-list-scroll">
+        <div className="sidebar-list">
           {invoices.map((invoice) => {
             const newIndex = newIds.get(invoice.id);
             const isNew = newIndex !== undefined;
@@ -99,7 +99,7 @@ export function InvoiceSidebar({ invoices, onRefresh }: InvoiceSidebarProps) {
             return (
               <div
                 key={invoice.id}
-                className={isNew ? "invoice-enter" : undefined}
+                className={`invoice-list-item ${isNew ? "invoice-enter" : ""}`}
                 style={isNew ? { animationDelay: `${newIndex * 90}ms` } : undefined}
               >
                 <div className="overflow-hidden">
@@ -114,6 +114,6 @@ export function InvoiceSidebar({ invoices, onRefresh }: InvoiceSidebarProps) {
           })}
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
